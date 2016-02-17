@@ -11,7 +11,7 @@ html:
 	pandoc main.md \
 		--filter pandoc-crossref \
 		--filter pandoc-citeproc \
-		--template pandoc_template.tex \
+		-s \
 		--to html5 \
 		-o output/rendered.html --mathjax
 
