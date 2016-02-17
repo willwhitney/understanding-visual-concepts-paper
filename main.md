@@ -49,7 +49,7 @@ This formulation forces the gating head to gradually concentrate more and more m
 
 ## Related work
 
-
+[@DBLP:journals/corr/LotterKC15]
 
 # Results
 
@@ -59,7 +59,7 @@ This formulation forces the gating head to gradually concentrate more and more m
 
 ## Bouncing balls
 
-
+Dataset [@NIPS2008_3567]
 
 
 
