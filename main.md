@@ -28,16 +28,24 @@ According to [@bengio2013representation], one key property of a good representat
 
 # Model
 
-This model is a deep convolutional autoencoder [@hinton2006reducing,@bengio2009learning,@masci2011stacked] with modifications to accomodate video prediction and encourage a particular factorization in the latent space.
+![The gated encoder. Each frame encoder produces a representation from its input. The gating head examines both these representations, then picks one component from the encoding of time $t$ to pass through the gate. All other components of the hidden representation are from the encoding of time $t-1$. As a result, each frame encoder predicts what it can about the next frame and encodes the "unpredictable" parts of the frame into one component.](figures/encoder.pdf){ #fig:encoder width=60% }
 
-$$\hat{x}_{t+1} = Decoder \big(Encoder(x_t, x_{t+1}) \big)$$
+This model is a deep convolutional autoencoder [@hinton2006reducing; @bengio2009learning; @masci2011stacked] with modifications to accomodate video prediction and encourage a particular factorization in the latent space. We train the model using a novel objective function: given a the previous frame of a video and the current frame, reconstruct the current frame. 
+
+$$\hat{x}_{t} = Decoder \big(Encoder(x_{t-1}, x_{t}) \big)$$
+
+We also introduce a _gating_ in the encoder (see [@Fig:encoder]) such that all components of the hidden representation except one must be predicted from the previous frame, and only one component of the current frame's encoding is used. This forces the model to represent the events which are unpredictable, such as the action of an agent or a random event in a game, in a very compact form which is completely disentangled from the predictable parts of the scene, such as the background.
 
 
 ## Continuation learning
 
-We use a technique first described in [@whitney2016disentangled] for smoothly annealing a soft weighting function into a hard decision.
+We use a technique first described in [@whitney2016disentangled] for smoothly annealing a soft weighting function into a binary decision. Ordinarily, a model which produces a hard decision to gate through a single component (out of e.g. 200) would be difficult to train; in this case, it would require many forward passes through the decoder to calculate the expectation of the loss for each of the possible decisions. However, a model which uses a soft weighting over all the components can be trained with gradient descent in a single forward-backward pass.
 
+In order to create a continuation between these two possibilities, we use a scheduling for _weight sharpening_ [@graves2014neural] combined with noise on the output of the gating head. Given a weight distribution $w$ produced by the gating head and a sharpening parameter $\gamma$ which is proportional to the training epoch, we produce a sharpened and noised weighting:
 
+$$w_i' = \frac{\big(w_i + \mathcal{N}(0, \sigma^2)\big)^{\gamma}}{\sum_j w_j^{\gamma}}$$
+
+This formulation forces the gating head to gradually concentrate more and more mass on a single location at a time over the course of training, and in practice results in fully binary gating distributions by the end of training.
 
 ## Related work
 
