@@ -41,7 +41,7 @@ We use a technique first described in [@whitney2016disentangled] for smoothly an
 
 ## Related work
 
-
+[@DBLP:journals/corr/LotterKC15]
 
 # Results
 
@@ -51,7 +51,7 @@ We use a technique first described in [@whitney2016disentangled] for smoothly an
 
 ## Bouncing balls
 
-
+Dataset [@NIPS2008_3567]
 
 
 
