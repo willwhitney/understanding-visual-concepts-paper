@@ -38,17 +38,19 @@ A number of generative models have been proposed in the literature to learn abst
 
 ![The gated model. Each frame encoder produces a representation from its input. The gating head examines both these representations, then picks one component from the encoding of time $t$ to pass through the gate. All other components of the hidden representation are from the encoding of time $t-1$. As a result, each frame encoder predicts what it can about the next frame and encodes the "unpredictable" parts of the frame into one component.](figures/model.pdf){ #fig:model width=100% }
 
-This model is a deep convolutional autoencoder [@hinton2006reducing; @bengio2009learning; @masci2011stacked] with modifications to accommodate video prediction and encourage a particular factorization in the latent space. Given two frames in sequence, $t-1$ and $t$, the model first produces respective latent representations $h_{t-1}$ and $h_t$ through a shared encoder. The model then combines these two representations to produce an hidden representation $\tilde{h}_{t}$ that is fed as input to a decoder.
+This model is a deep convolutional autoencoder [@hinton2006reducing; @bengio2009learning; @masci2011stacked] with modifications to accommodate video prediction and encourage a particular factorization in the latent space. Given two frames in sequence, $x_{t-1}$ and $x_{t}$, the model first produces respective latent representations $h_{t-1}$ and $h_t$ through a shared encoder. The model then combines these two representations to produce a hidden representation $\tilde{h}_{t}$ that is fed as input to a decoder.
 
- We train the model using a novel objective function: given the previous frame $t-1$ of a video and the current frame $t$, reconstruct the current frame.
+ We train the model using a novel objective function: given the previous frame $x_{t-1}$ of a video and the current frame $x_{t}$, reconstruct the current frame as $\hat{x}_{t}$.
 
 $$\tilde{h}_{t} = Encoder(x_{t-1}, x_{t})$$
 
 $$\hat{x}_{t} = Decoder(\tilde{h}_{t})$$
 
-To produce $\tilde{h}_{t}$, we introduce a _gating_ in the encoder (see [@Fig:model]) such that all components of the hidden representation except one must be predicted from the previous frame, and only one component of the current frame's encoding is used. Concretely, the encoder learns to use a _gating head_ that selects one index $i$ of the latent representation vector to gate. Then $\tilde{h}_{t}$ is constructed as $h_{t-1}$, with the $i$th component of $h_{t-1}$ swapped out for the $i$th component of $h_t$.
+To produce $\tilde{h}_{t}$, we introduce a __gating__ in the encoder (see [@Fig:model]) that select a small set of __gating units__ that characterize the transformation <!-- better terminology --> between $x_{t-1}$ and $x_t$. For clarity, in this paper we describe our model under the context of one gating unit. Concretely, the encoder learns to use a _gating head_ that selects one index $i$ of the latent representation vector, and then $\tilde{h}_{t}$ is constructed as $h_{t-1}$, with the $i$th component of $h_{t-1}$ swapped out for the $i$th component of $h_t$.
 
-Because the model must learn to reconstruct the current frame $t$ from an representation that is primarily composed of the components of the representation of $t-1$, the model is encouraged to represent the attributes of $t$ that are different from that of $t-1$, such as the action of an agent or a random event in a game, in a very compact form which is completely disentangled from the invariant parts of the scene, such as the background. Thus, the model isolates the transformation from $t-1$ to $t$ from other latent features via the component $i$ selected by the gating head.
+Because the model must learn to reconstruct the current frame $t$ from a representation that is primarily composed of the components of the representation of $t-1$, the model is encouraged to represent the attributes of $t$ that are different from that of $t-1$, such as the lighting or pose of a face, in a very compact form which is completely disentangled from the invariant parts of the scene, such as the background. Thus, the model isolates the transformation from $t-1$ to $t$ from other latent features via the component $i$ selected by the gating head.
+
+
 
 <!-- This forces the model to represent the events which are unpredictable, such as the action of an agent or a random event in a game, in a very compact form which is completely disentangled from the predictable parts of the scene, such as the background. -->
 
