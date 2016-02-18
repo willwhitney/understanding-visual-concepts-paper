@@ -42,9 +42,7 @@ This model is a deep convolutional autoencoder [@hinton2006reducing; @bengio2009
 
  We train the model using a novel objective function: given the previous frame $x_{t-1}$ of a video and the current frame $x_{t}$, reconstruct the current frame as $\hat{x}_{t}$.
 
-$$\tilde{h}_{t} = Encoder(x_{t-1}, x_{t})$$
-
-$$\hat{x}_{t} = Decoder(\tilde{h}_{t})$$
+<!-- $$\tilde{h}_{t} = Encoder(x_{t-1}, x_{t}) \qquad \hat{x}_{t} = Decoder(\tilde{h}_{t})$$ -->
 
 To produce $\tilde{h}_{t}$, we introduce a _gating_ in the encoder (see [@Fig:model]) that select a small set of _gating units_ that characterize the transformation <!-- better terminology --> between $x_{t-1}$ and $x_t$. For clarity, in this paper we describe our model   under the context of one gating unit. Concretely, the encoder learns to use a _gating head_ that selects one index $i$ of the latent representation vector as the gating unit, and then $\tilde{h}_{t}$ is constructed as $h_{t-1}$, with the $i$th component of $h_{t-1}$ swapped out for the $i$th component of $h_t$.
 
@@ -80,6 +78,10 @@ Our first dataset is frames from playing the Atari 2600 game Breakout. The model
 
 We trained the model on faces generated from the Basel face model and prepared as in [@kulkarni2015deep]. The input is two images of the same face between which only one of {lighting, elevation, azimuth} changes. For this dataset we use a single gating head, so the model must represent all differences between these two images in one unit only.
 
+
+# Discussion
+
+We have shown that it is possible to train a model which learns a factorized, symbolic representation of the factors of variation in image sequences from raw data. Such a model uses temporal continuity to understand visual concepts at a high level, representing objects and motion instead of raw pixels. Future work can extend this model to more complex settings with an arbitrary number of factors of variation.
 
 <!-- seeems like these are temporal "features" -->
 
