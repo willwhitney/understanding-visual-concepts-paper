@@ -38,18 +38,24 @@ A number of generative models have been proposed in the literature to learn abst
 
 ![The gated encoder. Each frame encoder produces a representation from its input. The gating head examines both these representations, then picks one component from the encoding of time $t$ to pass through the gate. All other components of the hidden representation are from the encoding of time $t-1$. As a result, each frame encoder predicts what it can about the next frame and encodes the "unpredictable" parts of the frame into one component.](figures/encoder.pdf){ #fig:encoder width=60% }
 
-This model is a deep convolutional autoencoder [@hinton2006reducing; @bengio2009learning; @masci2011stacked] with modifications to accommodate video prediction and encourage a particular factorization in the latent space. <!--Given two frames in sequence, $t-1$ and $t$, the model first produces latent representations $h_{t-1}$ and $h_t$ through a shared encoder. The model then combines these two representations to produce an hidden representation $h_{t-1,t}$ <!--notation? that is fed as input to a decoder.--> We train the model using a novel objective function: given a the previous frame of a video and the current frame, reconstruct the current frame.
+This model is a deep convolutional autoencoder [@hinton2006reducing; @bengio2009learning; @masci2011stacked] with modifications to accommodate video prediction and encourage a particular factorization in the latent space. Given two frames in sequence, $t-1$ and $t$, the model first produces respective latent representations $h_{t-1}$ and $h_t$ through a shared encoder. The model then combines these two representations to produce an hidden representation $\tilde{h}_{t}$ <!--notation?--> that is fed as input to a decoder.
 
-$$\hat{x}_{t} = Decoder \big(Encoder(x_{t-1}, x_{t}) \big)$$
+ We train the model using a novel objective function: given the previous frame $t-1$ of a video and the current frame $t$, reconstruct the current frame.
 
-<!--Alternative version: To combine the latent representations $h_{t-1}$ and $h_t$, we introduce a _gating_ in the encoder (see [@Fig:encoder]) such that all but one component of $h_{t-1}$ are copied to $h_{t-1,t}$, and the remaining component is given by its corresponding index in the representation $h_t$. In other words, all but one component of the hidden representation $h_{t-1,t}$ of the reconstructed image must be predicted <!--(it isn't actually predicted, it's copied) from the previous frame's encoding $h_{t-1}$, and only one component of the current frame's encoding $h_t$ is used.-->
+$$\tilde{h}_{t} = Encoder(x_{t-1}, x_{t})$$
 
-We also introduce a _gating_ in the encoder (see [@Fig:encoder]) such that all components of the hidden representation except one must be predicted from the previous frame, and only one component of the current frame's encoding is used. This forces the model to represent the events which are unpredictable, such as the action of an agent or a random event in a game, in a very compact form which is completely disentangled from the predictable parts of the scene, such as the background.
+$$\hat{x}_{t} = Decoder(\tilde{h}_{t})$$
+
+To produce $\tilde{h}_{t}$, we introduce a _gating_ in the encoder (see [@Fig:encoder]) such that all components of the hidden representation except one must be predicted from the previous frame, and only one component of the current frame's encoding is used. Concretely, the encoder learns to use a _gating head_ that selects one index $i$ of the latent representation vector to gate. Then $\tilde{h}_{t}$ is constructed as $h_{t-1}$, with the $i$th index of $h_{t-1}$ swapped out for the $i$th index of $h_t$.
+
+Because the model must learn to reconstruct the current frame $t$ from an representation that is primarily composed of the components of the representation of $t-1$, the model is encouraged to represent the attributes of $t$ that are different from that of $t-1$, such as the action of an agent or a random event in a game, in a very compact form which is completely disentangled from the invariant parts of the scene, such as the background. Thus, the model isolates the transformation from $t-1$ to $t$ from other latent features via the component $i$ selected by the gating head.
+
+<!-- This forces the model to represent the events which are unpredictable, such as the action of an agent or a random event in a game, in a very compact form which is completely disentangled from the predictable parts of the scene, such as the background. -->
 
 
 ## Continuation Learning
 
-We use a technique first described in [@whitney2016disentangled] for smoothly annealing a soft weighting function into a binary decision. Ordinarily, a model which produces a hard decision to gate through a single component (out of e.g. 200) would be difficult to train; in this case, it would require many forward passes through the decoder to calculate the expectation of the loss for each of the possible decisions. However, a model which uses a soft weighting over all the components can be trained with gradient descent in a single forward-backward pass.
+To learn the gating function, we use a technique first described in [@whitney2016disentangled] for smoothly annealing a soft weighting function into a binary decision. Ordinarily, a model which produces a hard decision to gate through a single component (out of e.g. 200) would be difficult to train; in this case, it would require many forward passes through the decoder to calculate the expectation of the loss for each of the possible decisions. However, a model which uses a soft weighting over all the components can be trained with gradient descent in a single forward-backward pass.
 
 In order to create a continuation between these two possibilities, we use a scheduling for _weight sharpening_ [@graves2014neural] combined with noise on the output of the gating head. Given a weight distribution $w$ produced by the gating head and a sharpening parameter $\gamma$ which is proportional to the training epoch, we produce a sharpened and noised weighting:
 
@@ -58,8 +64,12 @@ $$w_i' = \frac{\big(w_i + \mathcal{N}(0, \sigma^2)\big)^{\gamma}}{\sum_j w_j^{\g
 This formulation forces the gating head to gradually concentrate more and more mass on a single location at a time over the course of training, and in practice results in fully binary gating distributions by the end of training.
 
 ## Multiple Factors of Variation
-Multiple heads
+Because there may be multiple aspects that vary from one image to another, we extend our model to support multiple gating heads <!-- see some other figure -->. Each head
 
+
+<!-- A representation of images with temporal features  -->
+
+<!-- Do we want to give our model a name? -->
 
 [@DBLP:journals/corr/LotterKC15]
 
@@ -70,11 +80,9 @@ Multiple heads
 ## Synthetic faces
 
 ## Bouncing balls
+We trained our model on moving objects in a black and white 2D world used in [@NIPS2008_3567].
 
-Dataset [@NIPS2008_3567]
-
-
-
+<!-- seeems like these are temporal "features" -->
 
 
 
