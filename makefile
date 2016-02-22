@@ -7,6 +7,12 @@ pdf:
 		--template pandoc_template.tex \
 		-o output/rendered.pdf
 
+tex:
+	pandoc main.md \
+		--filter pandoc-crossref \
+		--filter pandoc-citeproc \
+		--template pandoc_template.tex \
+		-o rendered.tex
 html:
 	pandoc main.md \
 		--filter pandoc-crossref \
